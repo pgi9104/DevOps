@@ -13,18 +13,42 @@ $script = <<SCRIPT
   yum upgrade
   yum update
   yum -y install epel-release
+
   #엔진X 설치
   yum -y install nginx
+
   #앤서블 설치
   yum -y install ansible
+
   #도커 설치
   yum -y install docker
   systemctl enable docker
+
   #git 설치
   yum -y install git
+
+  #ruby 설치
+  command curl -sSL https://rvm.io/pkuczynski.asc | sudo gpg2 --import -
+
+  # RVM 설치
+  curl -L get.rvm.io | sudo bash -s stable
+  sudo usermod -aG rvm $USER
+  id $USER
+  source /etc/profile.d/rvm.sh
+  rvm reload
+  sudo su
+  rvm requirements run
+  
+  # Ruby 설치
+  rvm install 2.7
+  rvm use 2.7 --default
+  sudo mv /bin/ruby /bin/ruby_2.0.0
+  sudo ln -s /usr/local/rvm/rubies/ruby-2.7.0/bin/ruby /bin/ruby
+  
   #도커 컴포즈
   curl -L https://github.com/docker/compose/releases/download/1.8.0/docker-compose-uname -s -uname -m > /usr/local/bin/docker-compose
   chmod +x /usr/local/bin/docker-compose
+  
   #쿠버네티스
   CNI_PLUGINS_VERSION="v1.1.1"
   ARCH="amd64"
