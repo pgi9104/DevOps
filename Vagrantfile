@@ -1,74 +1,126 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
-
 Vagrant.configure("2") do |config|
-  config.vm.box = "centos/7"
-  config.vm.hostname = "demo"
-  config.vm.network "private_network", ip: "192.168.33.10"
-  config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.provision "shell", inline: $script
+ N=2
+
+  config.vm.define "master" do |master|
+    master.vm.box = "ubuntu/jammy64"
+    master.vm.network "private_network", ip: "192.168.56.10"
+    master.vm.hostname = "master"
+
+    master.vm.provider "virtualbox" do |v|
+      v.memory = 4096
+      v.cpus = 4
+    end
+
+    master.vm.provision "0", type: "shell", preserve_order: true, privileged: true, inline: <<-EOC
+cat <<-'EOF' >/etc/modules-load.d/kubernetes.conf
+br_netfilter
+EOF
+
+sudo modprobe br_netfilter
+
+cat <<-'EOF' >/etc/sysctl.d/kubernetes.conf
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+sudo sysctl --system
+
+sudo apt update
+sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
+
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
+sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+sudo apt update
+sudo apt install -y containerd.io
+
+containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
+sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
+
+sudo systemctl restart containerd
+sudo systemctl enable containerd
+
+cat <<-'EOF' >/etc/default/kubelet
+KUBELET_EXTRA_ARGS=--node-ip=192.168.56.10
+EOF
+
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+
+OUTPUT_FILE=/vagrant/join.sh
+rm -rf $OUTPUT_FILE
+rm -rf /vagrant/.kube
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint=192.168.56.10 --apiserver-advertise-address=192.168.56.10
+sudo kubeadm token create --print-join-command > $OUTPUT_FILE
+chmod +x $OUTPUT_FILE
+
+mkdir -p $HOME/.kube
+sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+cp -R $HOME/.kube /vagrant/.kube
+cp -R $HOME/.kube /home/vagrant/.kube
+sudo chown -R vagrant:vagrant /home/vagrant/.kube
+kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+kubectl completion bash >/etc/bash_completion.d/kubectl
+echo 'alias k=kubectl' >>/home/vagrant/.bashrc
+    EOC
+  end
+
+  (1..N).each do |i|
+    config.vm.define "worker#{i}" do |worker|
+      worker.vm.box = "ubuntu/jammy64"
+      worker.vm.network "private_network", ip: "192.168.56.1#{i}"
+      worker.vm.hostname = "worker#{i}"
+
+      worker.vm.provider "virtualbox" do |v|
+        v.memory = 2048
+        v.cpus = 2
+      end
+
+      worker.vm.provision "0", type: "shell", preserve_order: true, privileged: true, inline: <<-EOC
+cat <<-'EOF' >/etc/modules-load.d/kubernetes.conf
+br_netfilter
+EOF
+
+sudo modprobe br_netfilter
+
+cat <<-'EOF' >/etc/sysctl.d/kubernetes.conf
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+sudo sysctl --system
+
+sudo apt update
+sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
+
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
+sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+sudo apt update
+sudo apt install -y containerd.io
+
+containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
+sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
+
+sudo systemctl restart containerd
+sudo systemctl enable containerd
+
+cat <<-'EOF' >/etc/default/kubelet
+KUBELET_EXTRA_ARGS=--node-ip=192.168.56.1#{i}
+EOF
+
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+      EOC
+    end
+  end
 end
-
-$script = <<SCRIPT
-  yum upgrade
-  yum update
-  yum -y install epel-release
-
-  #엔진X 설치
-  yum -y install nginx
-
-  #앤서블 설치
-  yum -y install ansible
-
-  #도커 설치
-  yum -y install docker
-  systemctl enable docker
-
-  #git 설치
-  yum -y install git
-
-  #ruby 설치
-  command curl -sSL https://rvm.io/pkuczynski.asc | sudo gpg2 --import -
-
-  # RVM 설치
-  curl -L get.rvm.io | sudo bash -s stable
-  sudo usermod -aG rvm $USER
-  id $USER
-  source /etc/profile.d/rvm.sh
-  rvm reload
-  sudo su
-  rvm requirements run
-  
-  # Ruby 설치
-  rvm install 2.7
-  rvm use 2.7 --default
-  sudo mv /bin/ruby /bin/ruby_2.0.0
-  sudo ln -s /usr/local/rvm/rubies/ruby-2.7.0/bin/ruby /bin/ruby
-  
-  #도커 컴포즈
-  curl -L https://github.com/docker/compose/releases/download/1.8.0/docker-compose-uname -s -uname -m > /usr/local/bin/docker-compose
-  chmod +x /usr/local/bin/docker-compose
-  
-  #쿠버네티스
-  CNI_PLUGINS_VERSION="v1.1.1"
-  ARCH="amd64"
-  DEST="/opt/cni/bin"
-  mkdir -p "$DEST"
-  curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGINS_VERSION}/cni-plugins-linux-${ARCH}-${CNI_PLUGINS_VERSION}.tgz" | sudo tar -C "$DEST" -xz
-  DOWNLOAD_DIR="/usr/local/bin"
-  mkdir -p "$DOWNLOAD_DIR"
-  CRICTL_VERSION="v1.25.0"
-  ARCH="amd64"
-  curl -L "https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-${ARCH}.tar.gz" | sudo tar -C $DOWNLOAD_DIR -xz
-  RELEASE="$(curl -sSL https://dl.k8s.io/release/stable.txt)"
-  ARCH="amd64"
-  cd $DOWNLOAD_DIR
-  curl -L --remote-name-all https://dl.k8s.io/release/${RELEASE}/bin/linux/${ARCH}/{kubeadm,kubelet,kubectl}
-  chmod +x {kubeadm,kubelet,kubectl}
-
-  RELEASE_VERSION="v0.4.0"
-  curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service" | sed "s:/usr/bin:${DOWNLOAD_DIR}:g" | sudo tee /etc/systemd/system/kubelet.service
-  mkdir -p /etc/systemd/system/kubelet.service.d
-  curl -sSL "https://raw.githubusercontent.com/kubernetes/release/${RELEASE_VERSION}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf" | sed "s:/usr/bin:${DOWNLOAD_DIR}:g" | sudo tee /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-  systemctl enable --now kubelet
-SCRIPT
