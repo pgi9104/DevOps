@@ -1,6 +1,7 @@
 Vagrant.configure("2") do |config|
  N=2
-
+  config.disksize.size = '40GB'
+  config.vm.boot_timeout = 3000
   config.vm.define "master" do |master|
     master.vm.box = "ubuntu/jammy64"
     master.vm.network "private_network", ip: "192.168.56.10"
@@ -10,7 +11,6 @@ Vagrant.configure("2") do |config|
       v.memory = 4096
       v.cpus = 4
     end
-
     master.vm.provision "0", type: "shell", preserve_order: true, privileged: true, inline: <<-EOC
 cat <<-'EOF' >/etc/modules-load.d/kubernetes.conf
 br_netfilter
@@ -27,7 +27,7 @@ EOF
 sudo sysctl --system
 
 sudo apt update
-sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
+sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates tree
 
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
 sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
@@ -67,17 +67,24 @@ sudo chown -R vagrant:vagrant /home/vagrant/.kube
 kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 kubectl completion bash >/etc/bash_completion.d/kubectl
 echo 'alias k=kubectl' >>/home/vagrant/.bashrc
+
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+
+source <(helm completion bash)
+echo "source <(helm completion bash)">>~/.bashrc
     EOC
   end
 
   (1..N).each do |i|
+    config.disksize.size = '160GB'
     config.vm.define "worker#{i}" do |worker|
       worker.vm.box = "ubuntu/jammy64"
       worker.vm.network "private_network", ip: "192.168.56.1#{i}"
       worker.vm.hostname = "worker#{i}"
-
       worker.vm.provider "virtualbox" do |v|
-        v.memory = 2048
+        v.memory = 4096
         v.cpus = 2
       end
 
@@ -97,7 +104,7 @@ EOF
 sudo sysctl --system
 
 sudo apt update
-sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
+sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates tree
 
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
 sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
