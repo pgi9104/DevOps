@@ -28,14 +28,14 @@ EOF
 
 sudo sysctl --system
 
-sudo apt update
-sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates tree
+sudo apt-get update
+sudo apt-get install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates tree
 
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
 sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
-sudo apt update
-sudo apt install -y containerd.io
+sudo apt-get update
+sudo apt-get install -y containerd.io
 
 containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
 sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
@@ -78,6 +78,8 @@ kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Doc
 kubectl completion bash >/etc/bash_completion.d/kubectl
 echo 'alias k=kubectl' >>/home/vagrant/.bashrc
 
+kubectl apply -f https://docs.projectcalio.org/manifests/canal.yaml
+
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
@@ -115,14 +117,14 @@ EOF
 
 sudo sysctl --system
 
-sudo apt update
-sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates tree
+sudo apt-get update
+sudo apt-get install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates tree
 
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
 sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
-sudo apt update
-sudo apt install -y containerd.io
+sudo apt-get update
+sudo apt-get install -y containerd.io
 sudo apt-get install net-tools -y
 
 containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
