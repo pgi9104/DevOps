@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
   config.vm.boot_timeout = 3000
   config.vm.define "master" do |master|
     master.vm.box = "ubuntu/jammy64"
-    master.vm.network "private_network", ip: "192.168.56.10"
+    master.vm.network "public_network", ip: "192.168.56.10"
     master.vm.hostname = "master"
 
     master.vm.provider "virtualbox" do |v|
@@ -78,8 +78,6 @@ kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Doc
 kubectl completion bash >/etc/bash_completion.d/kubectl
 echo 'alias k=kubectl' >>/home/vagrant/.bashrc
 
-kubectl apply -f https://docs.projectcalio.org/manifests/canal.yaml
-
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
@@ -93,7 +91,7 @@ echo "source <(helm completion bash)">>~/.bashrc
     config.disksize.size = '50GB'
     config.vm.define "worker#{i}" do |worker|
       worker.vm.box = "ubuntu/jammy64"
-      worker.vm.network "private_network", ip: "192.168.56.1#{i}"
+      worker.vm.network "public_network", ip: "192.168.56.1#{i}"
       worker.vm.hostname = "worker#{i}"
       worker.vm.provider "virtualbox" do |v|
         v.memory = 8192
