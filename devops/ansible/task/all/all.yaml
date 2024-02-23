@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+    - name: Make a directory
+      file:
+        path: ~/vol
+        state: directory
+        mode: 0755
