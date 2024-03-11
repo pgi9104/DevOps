@@ -1,0 +1,13 @@
+---
+- hosts: IaC
+  become: yes
+  connection: local
+  roles: 
+#    - common
+    - nginx
+    - serverspec
+
+- hosts: nfs-server
+  become: yes
+  roles:
+    - nfs-server

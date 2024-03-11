@@ -1,9 +1,0 @@
----
-- hosts: all
-  tasks:
-    - name: Make a directory
-      file:
-        path: /vol
-        state: directory
-        group: user
-        mode: 0755

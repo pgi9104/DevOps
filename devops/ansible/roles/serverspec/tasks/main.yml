@@ -1,0 +1,33 @@
+---
+# tasks file for serverspec
+- name: install ruby
+  apt:
+    name: ruby
+    state: latest
+    update_cache: yes
+
+- name: install gem
+  apt:
+    name: gem
+    state: latest
+    update_cache: yes
+
+- name: install ruby-serverspec
+  apt:
+    name: ruby-serverspec
+
+- name: install serverspec
+  gem: name={{ item }} state=present
+  with_items:
+    - rake
+    - serverspec
+    - coderay
+
+- name: distribute serverspec suite
+  copy: src=serverspec dest={{ serverspec_base_path }}
+
+- name: Exists NFS directory
+  template: src=nfs_server_spec.rb dest={{ serverspec_path }}/spec/localhost/nfs_server_spec.rb
+
+- name: distribute spec nginx file
+  template: src=nginx_spec.rb.j2 dest={{ serverspec_path }}/spec/localhost/nginx_spec.rb
