@@ -15,4 +15,4 @@
 - hosts: nfs-server
   become: yes
   roles: 
-    - nfs-client
+    - nfs-server
