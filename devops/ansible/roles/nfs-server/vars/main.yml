@@ -1,0 +1,5 @@
+---
+# vars file for nfs-server
+nfs:
+  directory: /home/vagrant/nfs_shared
+  line: "192.168.56.0/24"

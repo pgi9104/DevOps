@@ -1,0 +1,19 @@
+---
+# tasks file for nfs-client
+- name: install nfs-client
+  apt:
+    name: nfs-client
+    state: present
+
+- name: make directory_nfs
+  file:
+    path: /home/vagrant/nfs
+    state: directory
+    
+- name: make mountpoint
+  mount:
+    path: /home/vagrant/nfs
+    src: 192.168.56.20:/home/vagrant/nfs_shared
+    # 소스 IP 작성
+    fstype: nfs
+    state: mounted

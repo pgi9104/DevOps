@@ -1,13 +1,18 @@
 ---
-- hosts: IaC
+- hosts: devops
   become: yes
   connection: local
   roles: 
-#    - common
     - nginx
     - serverspec
+    - docker-server
+
+- hosts: nfs-client
+  become: yes
+  roles: 
+    - nfs-client
 
 - hosts: nfs-server
   become: yes
-  roles:
-    - nfs-server
+  roles: 
+    - nfs-client

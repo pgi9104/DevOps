@@ -1,1 +1,1 @@
-ansible-playbook -i inventory playbook.yaml --check --diff
+ansible-playbook -i inventory.ini playbook.yaml --check --diff

@@ -1,0 +1,23 @@
+---
+# tasks file for nfs-server
+- name: install nfs-server
+  apt:
+    name: nfs-server
+    state: present
+
+- name: make directory (nfs_shared)
+  file:
+    path: "{{ nfs.directory }}"
+    state: directory
+    mode: 0777
+    
+- name: /etc/exports configuration
+  lineinfile:
+    path: /etc/exports
+    line: "{{ nfs.directory }} {{ nfs.line }}(rw,sync)"
+    # client IP 대역 작성
+
+- name: nfs service restart
+  service:
+    name: nfs-server
+    state: restarted
