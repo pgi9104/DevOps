@@ -7,13 +7,13 @@
 
 - name: make directory_nfs
   file:
-    path: /home/vagrant/nfs
+    path: "{{nfs.mount.directory}}"
     state: directory
     
 - name: make mountpoint
   mount:
-    path: /home/vagrant/nfs
-    src: 192.168.56.20:/home/vagrant/nfs_shared
+    path: "{{nfs.mount.directory}}"
+    src: "{{ nfs.server.ip }}:{{ nfs.server.target }}"
     # 소스 IP 작성
     fstype: nfs
     state: mounted
