@@ -3,16 +3,7 @@
   become: yes
   connection: local
   roles: 
-    - nginx
-    - serverspec
-    - docker-server
-
-- hosts: nfs-client
-  become: yes
-  roles: 
-    - nfs-client
-
-- hosts: nfs-server
-  become: yes
-  roles: 
-    - nfs-server
+    # - nginx
+    # - serverspec
+    # - docker-server
+    - docker-jenkins
