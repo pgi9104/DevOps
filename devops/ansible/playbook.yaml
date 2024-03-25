@@ -6,4 +6,5 @@
     # - nginx
     # - serverspec
     # - docker-server
-    - docker-jenkins
+    # - docker-jenkins
+    # - docker-harbor

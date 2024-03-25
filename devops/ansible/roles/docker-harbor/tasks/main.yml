@@ -1,0 +1,91 @@
+---
+# tasks file for docker-harbor
+- name: Make directory of harbor
+  file:
+      path: "{{ item }}"
+      state: directory
+      mode: '0755'
+  with_items:
+    - /certs
+    - /data/cert
+    - /data/cert/{{ ansible_host }}
+    - /etc/docker/certs.d/{{ ansible_host }}
+
+- name: Create CA
+  shell: |
+    cd /certs
+
+    openssl genrsa -out ca.key 4096
+    openssl req -x509 -new -nodes -sha512 -days 3650 \
+      -subj '/C=CN/ST=seoul/L=seoul/O="{{ ansible_user }}"/OU="{{ ansible_user }}"/CN="{{ ansible_host }}"' \
+      -key ca.key \
+      -out ca.crt
+
+    openssl genrsa -out "{{ ansible_host }}".key 4096
+    openssl req -sha512 -new \
+      -subj '/C=CN/ST=seoul/L=seoul/O="{{ ansible_user }}"/OU="{{ ansible_user }}"/CN="{{ ansible_host }}"' \
+      -key {{ ansible_host }}.key \
+      -out {{ ansible_host }}.csr
+
+- name: Create v3.ext
+  shell: |
+    cd /certs
+    echo "subjectAltName = IP:{{ ansible_host }},IP:127.0.0.1" >> v3.ext
+
+- name: Create crt
+  shell: |
+    cd /certs
+    openssl x509 -req -sha512 -days 3650 \
+      -extfile v3.ext \
+      -CA ca.crt -CAkey ca.key -CAcreateserial \
+      -in {{ ansible_host }}.csr \
+      -out {{ ansible_host }}.crt
+
+- name: Create cert
+  shell: |
+    cd /certs
+    openssl x509 -inform PEM -in {{ ansible_host }}.crt -out {{ ansible_host }}.cert
+- name: Copy key
+  shell: |
+    cd /certs
+    cp {{ ansible_host }}.crt /data/cert/
+    cp {{ ansible_host }}.key /data/cert/
+    cp {{ ansible_host }}.cert /etc/docker/certs.d/{{ ansible_host }}/
+    cp {{ ansible_host }}.key /etc/docker/certs.d/{{ ansible_host }}/
+    cp ca.crt /etc/docker/certs.d/{{ ansible_host }}/
+
+- name: Unarchive harbor.tgz
+  unarchive:
+    src: https://github.com/goharbor/harbor/releases/download/v2.3.1/harbor-offline-installer-v2.3.1.tgz
+    dest: /
+    mode: '0755'
+    remote_src: yes
+
+- name: Template
+  template:
+    src: harbor.yml.j2
+    dest: /harbor/harbor.yml
+    mode: '0755'
+
+- name: Pre install harbor
+  shell: |
+    cd /harbor
+    ./prepare
+  args:
+    executable: /bin/bash
+
+- name: install docker-compose
+  shell: |
+    apt install jq -y
+    VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | jq .name -r)
+    DESTINATION=/usr/bin/docker-compose
+    curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+    chmod 755 $DESTINATION
+
+
+- name: Install harbor
+  shell: |
+    cd /harbor
+    ./install.sh --with-chartmuseum
+  args:
+    executable: /bin/bash

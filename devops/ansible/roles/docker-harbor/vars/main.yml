@@ -1,0 +1,15 @@
+---
+# vars file for docker-harbor
+http:
+  port: 29991
+
+https:
+  port: 29992
+
+harbor_admin_password: Harbor12345
+
+data_volume: /data/harbor
+
+metric:
+  enabled: "true"
+  port: 29990

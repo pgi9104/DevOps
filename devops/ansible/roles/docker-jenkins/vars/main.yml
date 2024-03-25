@@ -1,2 +1,6 @@
 ---
 # vars file for docker-jenkins
+jenkins:
+  ports: "18080"
+  volumes: 
+    directory: "/data/jenkins/var/home"

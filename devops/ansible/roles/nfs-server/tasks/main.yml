@@ -14,7 +14,7 @@
 - name: /etc/exports configuration
   lineinfile:
     path: /etc/exports
-    line: "{{ nfs.directory }} {{ nfs.line }}(rw,sync)"
+    line: "{{ nfs.directory }} {{ nfs.line }}({{ nfs.auth }})"
     # client IP 대역 작성
 
 - name: nfs service restart
