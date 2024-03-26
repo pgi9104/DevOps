@@ -1,0 +1,20 @@
+---
+# tasks file for docker-gitlab
+- name: Make directory of docker-compose
+  file:
+      path: "{{ item }}"
+      state: directory
+      mode: '0755'
+  with_items:
+    - /home/{{ ansible_user }}/docker-compose/gitlab
+
+- name: Template
+  template:
+    src: docker-compose.yaml.j2
+    dest: /home/{{ ansible_user }}/docker-compose/gitlab/docker-compose.yaml
+    mode: '0755'
+
+- name: Docker-compose up
+  shell:
+    chdir: /home/{{ ansible_user }}/docker-compose/gitlab
+    cmd: docker-compose up -d

@@ -1,0 +1,19 @@
+version: '3.6'
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ce:latest'
+    container_name: gitlab
+    restart: always
+    hostname: {{ gitlab.hostname }}
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://{{ gitlab.hostname }}'
+    ports:
+      - "{{ gitlab.ports.http }}:80"
+      - "{{ gitlab.ports.ssh }}:22"
+      - "{{ gitlab.ports.https }}:443"
+ 
+    volumes:
+      - '/home/{{ ansible_user }}/{{ gitlab.volumes }}/config:/etc/gitlab'
+      - '/home/{{ ansible_user }}/{{ gitlab.volumes }}/logs:/var/log/gitlab'
+      - '/home/{{ ansible_user }}/{{ gitlab.volumes }}/data:/var/opt/gitlab'
