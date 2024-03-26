@@ -8,3 +8,13 @@
     # - docker-server
     # - docker-jenkins
     # - docker-harbor
+
+#- hosts: docker-redmine
+#  become: yes
+#  roles:
+#    - docker-redmine
+
+- hosts: docker-gitlab
+  become: yes
+  roles:
+    - docker-gitlab
