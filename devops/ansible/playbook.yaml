@@ -19,7 +19,12 @@
 #  roles:
 #    - docker-gitlab
 
-- hosts: node-exporter
+#- hosts: node-exporter
+#  become: yes
+#  roles:
+#    - node-exporter
+
+- hosts: docker-promethus-grafana
   become: yes
   roles:
-    - node-exporter
+    - docker-promethus-grafana
