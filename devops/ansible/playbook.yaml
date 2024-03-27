@@ -14,7 +14,12 @@
 #  roles:
 #    - docker-redmine
 
-- hosts: docker-gitlab
+#- hosts: docker-gitlab
+#  become: yes
+#  roles:
+#    - docker-gitlab
+
+- hosts: node-exporter
   become: yes
   roles:
-    - docker-gitlab
+    - node-exporter

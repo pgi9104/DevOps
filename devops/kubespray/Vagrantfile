@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
   config.vm.boot_timeout = 3000
   config.vm.define "bootstrap" do |bootstrap|
     bootstrap.vm.box = "ubuntu/jammy64"
-    bootstrap.vm.network "private_network", ip: "192.168.56.10"
+    bootstrap.vm.network "private_network", ip: "192.168.56.10", name: "VirtualBox Host-Only Ethernet Adapter #2"
     bootstrap.vm.hostname = "bootstrap"
 
     bootstrap.vm.provider "virtualbox" do |v|
@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
   config.vm.boot_timeout = 3000
   config.vm.define "master" do |master|
     master.vm.box = "ubuntu/jammy64"
-    master.vm.network "private_network", ip: "192.168.56.20"
+    master.vm.network "private_network", ip: "192.168.56.20", name: "VirtualBox Host-Only Ethernet Adapter #2"
     master.vm.hostname = "master"
 
     master.vm.provider "virtualbox" do |v|
@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
     config.disksize.size = '50GB'
     config.vm.define "worker#{i}" do |worker|
       worker.vm.box = "ubuntu/jammy64"
-      worker.vm.network "private_network", ip: "192.168.56.2#{i}"
+      worker.vm.network "private_network", ip: "192.168.56.2#{i}", name: "VirtualBox Host-Only Ethernet Adapter #2"
       worker.vm.hostname = "worker#{i}"
       worker.vm.provider "virtualbox" do |v|
 	    v.gui = false
