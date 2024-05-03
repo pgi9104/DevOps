@@ -15,6 +15,6 @@
     mode: '0755'
 
 - name: Docker-compose up
-  shell:
+  shell: docker-compose up -d
+  args:
     chdir: /home/{{ ansible_user }}/docker-compose/redmine
-    cmd: docker-compose up -d

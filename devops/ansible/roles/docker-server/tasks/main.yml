@@ -10,8 +10,17 @@
   become: true
   file: dest=/usr/bin/docker mode=+x
 
-- name: python docker / docker-compse module
-  pip:
-    name:
-        - docker
-        - docker-compose
+- name: Install pip
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - pip
+
+- name: install docker-compose
+  shell: |
+    apt install jq -y
+    VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | jq .name -r)
+    DESTINATION=/usr/bin/docker-compose
+    curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+    chmod 755 $DESTINATION
