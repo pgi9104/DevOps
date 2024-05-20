@@ -2,7 +2,7 @@
 # vars file for nfs-client
 nfs:
   server:
-    ip: 192.168.56.10
+    ip: 192.168.56.20
     target: /home/vagrant/nfs_shared
   mount:
     directory: /home/vagrant/nfs
