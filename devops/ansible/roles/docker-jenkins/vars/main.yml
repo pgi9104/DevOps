@@ -1,6 +1,11 @@
 ---
 # vars file for docker-jenkins
 jenkins:
-  ports: "18080"
+  name: jenkins
+  host: "{{ ansible_user }}"
+  group: "{{ ansible_user }}"
+  ports: "28080"
+  dockercompose:
+    directory: "/home/{{ ansible_user }}/docker-compose"
   volumes: 
-    directory: "/data/jenkins/var/home"
+    directory: "/home/{{ ansible_user }}/volumes"

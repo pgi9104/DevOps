@@ -1,21 +1,13 @@
 ---
-- name: make directory
-  file:
-    path: "{{ jenkins.volumes.directory }}"
-    state: directory
-    owner: vagrant
-    group: vagrant
-    mode: 0777
+- name: Template
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    mode: '0755'
+  with_items:
+    - { src: 'docker-jenkins.sh.j2', dest: '/home/{{ ansible_user }}/docker-compose/jenkins/docker-jenkins.sh' }
 
-- name: Container present
-  docker_container:
-    name: jenkins
-    state: started
-    restart_policy: always
-    image: jenkins/jenkins
-    ports:
-      - "{{ jenkins.ports }}:8080"
-      - "50000:50000"
-    volumes:
-      - "{{ jenkins.volumes.directory }}:/var/jenkins_home"
-      - /var/run/docker.sock:/var/run/docker.sock
+- name: Install docker-jenkins
+  shell:
+    chdir: /home/{{ ansible_user }}/docker-compose/jenkins
+    cmd: ./docker-jenkins.sh

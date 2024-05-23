@@ -8,7 +8,7 @@ https:
 
 harbor_admin_password: Harbor12345
 
-data_volume: /data/harbor
+data_volume: /home/vagrant/volumes/harbor
 
 metric:
   enabled: "true"
