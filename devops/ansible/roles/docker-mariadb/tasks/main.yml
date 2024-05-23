@@ -1,0 +1,14 @@
+---
+- name: Template
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    mode: '0755'
+  with_items:
+    - { src: 'installMariadb.sh.j2', dest: '/home/{{ ansible_user }}/docker-compose/db/maria/installMariadb.sh' }
+    - { src: 'templateScript.txt.j2', dest: '/home/{{ ansible_user }}/docker-compose/db/maria/templateScript.txt' }
+
+- name: Install docker-mariadb
+  shell:
+    chdir: /home/{{ ansible_user }}/docker-compose/db/maria
+    cmd: ./installMariadb.sh

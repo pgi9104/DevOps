@@ -3,16 +3,17 @@
   become: yes
   connection: local
   roles: 
-    # - nginx
-    # - serverspec
-    # - docker-server
-    # - docker-jenkins
-    # - docker-harbor
+#    - nginx
+#    - serverspec
+#    - docker-server
+#    - docker-jenkins
+#    - docker-harbor
+    - docker-mariadb
 
 #- hosts: docker-redmine
 #  become: yes
 #  roles:
-#    - docker-redmine
+#   - docker-redmine
 
 #- hosts: docker-gitlab
 #  become: yes
@@ -24,7 +25,7 @@
 #  roles:
 #    - node-exporter
 
-- hosts: docker-promethus-grafana
-  become: yes
-  roles:
-    - docker-promethus-grafana
+#- hosts: docker-promethus-grafana
+#  become: yes
+#  roles:
+#    - docker-promethus-grafana

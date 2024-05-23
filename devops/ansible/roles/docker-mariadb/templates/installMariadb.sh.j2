@@ -1,0 +1,62 @@
+GLOBAL_VOLUME="/home/vagrant/volumes"
+GLOBAL_DB_VOLUME="$GLOBAL_VOLUME/db"
+GLOBAL_COMPOSE_DIR="/home/vagrant/docker-compose/db"
+
+echo "Make common Directories"
+mkdir "$GLOBAL_VOLUME"
+mkdir "$GLOBAL_DB_VOLUME"
+mkdir "$GLOBAL_COMPOSE_DIR"
+
+MARIADB_ENABLED={{ maria.enabled }}
+
+if [ $MARIADB_ENABLED ]; then
+echo "[MARIADB][INSTALL][START][Set vars of mariadb]"
+MARIA_IMAGE="{{ maria.image }}"
+MARIA_ROOT_PASSWORD={{ maria.root.pw }}
+MARIA_NAME={{ maria.container.name }}
+MARIA_CONNECT_PORT={{ maria.port }}
+MARIA_VOLUME="$GLOBAL_DB_VOLUME/maria"
+MARIA_COMPOSE_DIR="$GLOBAL_COMPOSE_DIR/maria"
+MARIA_COMPOSE_YML="$MARIA_COMPOSE_DIR/docker-compose.yaml"
+
+echo "[MARIADB][SET_VARS][MARIA_IMAGE][$MARIA_IMAGE]"
+echo "[MARIADB][SET_VARS][MARIA_ROOT_PASSWORD][$MARIA_ROOT_PASSWORD]"
+echo "[MARIADB][SET_VARS][MARIA_USERNAME][$MARIA_USERNAME]"
+echo "[MARIADB][SET_VARS][MARIA_USER_PASSWORD][$MARIA_USER_PASSWORD]"
+echo "[MARIADB][SET_VARS][MARIA_NAME][$MARIA_NAME]"
+echo "[MARIADB][SET_VARS][MARIA_CONNECT_PORT][$MARIA_CONNECT_PORT]"
+echo "[MARIADB][SET_VARS][MARIA_VOLUME][$MARIA_VOLUME]"
+echo "[MARIADB][SET_VARS][MARIA_COMPOSE_YML][$MARIA_COMPOSE_YML]"
+echo "[MARIADB][SET_VARS][MARIA_INIT_SCRIPT][$MARIA_INIT_SCRIPT]"
+
+echo "[MARIADB][MAKE_DIRECTORIES][Make mariadb directories]"
+mkdir $MARIA_COMPOSE_DIR | mkdir $MARIA_VOLUME
+
+echo "[MARIADB][MAKE_DOCKER_COMPOSE_FILE][Write docker-compose mariadb]"
+cat << EOF > $MARIA_COMPOSE_YML
+version: '3.3'
+services:
+  mariadb:
+    image: $MARIA_IMAGE
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MARIA_ROOT_PASSWORD
+      - TZ=Asia/Seoul
+    ports:
+      - $MARIA_CONNECT_PORT:3306
+    volumes:
+      - $MARIA_VOLUME/data:/var/lib/mysql
+      - $MARIA_VOLUME/conf.d:/etc/mysql/conf.d
+EOF
+
+echo "[MARIADB][MOVE][Move direcotry of existing a docker-compose file]"
+cd $MARIA_COMPOSE_DIR
+
+echo "[MARIADB][DOCKER-COMPOSE][START][docker compose up]"
+docker-compose up -d
+echo "[MARIADB][DOCKER-COMPOSE][END][docker compose]"
+echo "[MARIADB][INSTALL][END][End to install mariadb]"
+else
+echo "[MARIADB][INSTALL][SKIP]"
+fi

@@ -1,0 +1,57 @@
+DOCKER_COMPOSE_VERSION="3.6"
+JENKINS_HOST={{ jenkins.host }}
+JENKINS_GROUP={{ jenkins.group }}
+JENKINS_NAME={{ jenkins.name }}
+VOLUME_DIR={{ jenkins.volumes.directory }}
+DOCKER_COMPOSE_DIR={{ jenkins.dockercompose.directory }}
+JENKINS_DOCKER_COMPOSE_DIR=$DOCKER_COMPOSE_DIR/$JENKINS_NAME
+JENKINS_DOCKER_COMPOSE_FILE=$JENKINS_DOCKER_COMPOSE_DIR/docker-compose.yaml
+JENKINS_VOL_DIR=$VOLUME_DIR/$JENKINS_NAME
+JENKINS_PORT={{ jenkins.ports }}
+INITPW=$JENKINS_DOCKER_COMPOSE_DIR/initPassword.txt
+
+echo "Make directory"
+mkdir $VOLUME_DIR | mkdir $JENKINS_VOL_DIR | mkdir $DOCKER_COMPOSE_DIR | mkdir $JENKINS_DOCKER_COMPOSE_DIR
+
+echo "Get Own DockerComposeDir"
+chown $JENKINS_HOST:$JENKINS_GROUP $JENKINS_DOCKER_COMPOSE_DIR
+
+echo "Make docker-compose file"
+cat << EOF > $JENKINS_DOCKER_COMPOSE_FILE
+version: '$DOCKER_COMPOSE_VERSION'
+
+services:
+  jenkins:
+    image: jenkins/jenkins
+    container_name: $JENKINS_NAME
+    volumes:
+      - $JENKINS_VOL_DIR/jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - $JENKINS_PORT:8080
+      - "50000:50000"
+    restart: always
+EOF
+
+echo "Get Own DockerComposeFile"
+chown $JENKINS_HOST:$JENKINS_GROUP $JENKINS_DOCKER_COMPOSE_FILE
+
+echo "Get Own DockerVolume"
+chown -R $JENKINS_HOST:$JENKINS_GROUP $JENKINS_VOL_DIR
+
+echo "Move $JENKINS_DOCKER_COMPOSE_DIR"
+cd $JENKINS_DOCKER_COMPOSE_DIR
+
+echo "Start docker-compose"
+docker-compose up -d
+echo "End docker-compose"
+
+echo "Get initPassword"
+echo $(docker exec -i $JENKINS_NAME /bin/cat /var/jenkins_home/secrets/initialAdminPassword) > $INITPW
+
+if [ -e "$INITPW" ]; then
+  echo "exist file"
+  cat $INITPW
+else
+  echo "Dose not exist file of initPassword "
+fi

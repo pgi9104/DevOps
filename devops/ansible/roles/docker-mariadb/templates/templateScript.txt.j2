@@ -1,0 +1,29 @@
+# enter docker mariadb
+docker exec -it {{ maria.container.name }} /bin/bash
+
+# enter mariadb
+mysql -u {{ template.user.id }} -p{{ template.user.pw }}
+
+# select user
+SELECT * FROM user;
+
+# create user
+CREATE USER '{{ template.user.id }}'@'%' IDENTIFIED BY '{{ template.user.pw }}';
+
+# create database
+CREATE DATABASE "{{ template.database.name }}";
+
+# grant database
+GRANT ALL PRIVILEGES ON {{ template.database.name }}.* TO {{ template.user.id }}@'%';
+
+# show grant user
+SHOW GRANTS FOR '{{ template.user.id }}'@'%';
+
+# flush grant
+FLUSH PRIVILEGES;
+
+# backup
+docker exec -t {{ maria.container.name }} /bin/bash -c 'mysqldump -u {{ template.user.id }} -p{{ template.user.pw }} {{ template.backup.database.name }} > {{ template.backup.filepath }}'
+
+# restore
+docker exec -t {{ maria.container.name }} /bin/bash -c 'mysql -u {{ template.user.id }} -p{{ template.user.pw }} {{ template.restore.database.name }} < {{ template.restore.filepath }}'
