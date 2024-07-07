@@ -1,0 +1,14 @@
+rabbitmq:
+  ports:
+    managementUI: "15672"
+    service: "5672"
+  volumes:
+    # 도커 재기동시 데이터를 유지하기 위함
+    etc: "{{ global.local.volume }}/rabbitmq/etc/"
+    data: "{{ global.local.volume }}/rabbitmq/data/"  # 데이터에 접근하기 위함
+    logs: "{{ global.local.volume }}/rabbitmq/logs/"  # 로그에 접근하기 위함
+  environment:
+    erlangCookie: "RabbitMQ-My-Cookes"  # 클러스터 구성시 노드끼리 동일하게 맞춰줘야 하는 값
+    default:
+      user: "admin"  # management UI에서 로그인 username
+      password: "rabbitpassword" # management UI에서 로그인 password

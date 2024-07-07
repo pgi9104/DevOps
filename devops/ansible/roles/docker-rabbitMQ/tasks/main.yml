@@ -1,0 +1,23 @@
+---
+# tasks file for docker-rabbitMQ
+- name: Make directory of docker-compose
+  file:
+      path: "{{ item }}"
+      state: directory
+      mode: '0755'
+  with_items:
+    - '{{ global.local.volume }}/rabbitmq'
+    - '{{ global.local.dockerComposeDir }}/rabbitmq'
+
+- name: Template
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    mode: '0755'
+  with_items:
+    - { src: 'docker-compose.yaml.j2', dest: '{{ global.local.dockerComposeDir }}/rabbitmq/docker-compose.yaml' }
+
+- name: Docker-compose up
+  shell:
+    chdir: '{{ global.local.dockerComposeDir }}/rabbitmq'
+    cmd: docker-compose up -d

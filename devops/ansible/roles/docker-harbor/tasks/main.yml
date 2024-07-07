@@ -82,6 +82,7 @@
 
 - name: Install harbor
   shell: |
+    export HARBOR_BUNDLE_DIR=/harbor
     ./install.sh --with-chartmuseum
   args:
     chdir: "/harbor"

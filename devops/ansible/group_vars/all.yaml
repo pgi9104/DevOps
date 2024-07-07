@@ -1,0 +1,8 @@
+global:
+  local:
+    dockerComposeDir: /home/{{ ansible_user }}/docker-compose
+    volume: /home/{{ ansible_user }}/volumes
+
+docker:
+  compose:
+    version: 3.6

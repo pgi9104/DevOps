@@ -1,0 +1,16 @@
+version: '{{ docker.compose.version }}'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-stream
+    volumes:
+      - "{{ rabbitmq.volumes.etc }}:/etc/rabbitmq/"
+      - "{{ rabbitmq.volumes.data }}:/var/lib/rabbitmq/"
+      - "{{ rabbitmq.volumes.logs }}:/var/log/rabbitmq/"
+    ports:
+      - "{{ rabbitmq.ports.service }}:5672"
+      - "{{ rabbitmq.ports.managementUI }}:15672"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "{{ rabbitmq.environment.erlangCookie }}"
+      RABBITMQ_DEFAULT_USER: "{{ rabbitmq.environment.default.user }}"
+      RABBITMQ_DEFAULT_PASS: "{{ rabbitmq.environment.default.password }}"
