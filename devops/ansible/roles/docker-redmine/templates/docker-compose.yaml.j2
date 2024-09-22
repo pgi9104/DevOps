@@ -15,9 +15,9 @@ services:
       REDMINE_DB_ENCODING: utf8
       #REDMINE_NO_DB_MIGRATE: true
     volumes:
-      - /home/{{ ansible_user }}/{{ redmine.volumes }}/usr/src/redmine/files:/usr/src/redmine/files
-      - /home/{{ ansible_user }}/{{ redmine.volumes }}/usr/src/redmine/plugins:/usr/src/redmine/plugins
-      - /home/{{ ansible_user }}/{{ redmine.volumes }}/usr/src/redmine/public/themes:/usr/src/redmine/public/themes
+      - {{ redmine.volumes }}/usr/src/redmine/files:/usr/src/redmine/files
+      - {{ redmine.volumes }}/usr/src/redmine/plugins:/usr/src/redmine/plugins
+      - {{ redmine.volumes }}/usr/src/redmine/public/themes:/usr/src/redmine/public/themes
 
   db:
     container_name: redmine-mariadb
@@ -29,7 +29,7 @@ services:
     ports:
       - {{ redmine.db.port }}:3306
     volumes:
-      - /home/{{ ansible_user }}/{{ redmine.volumes }}/mysql/var/lib/mysql:/var/lib/mysql
+      - {{ redmine.volumes }}/mysql/var/lib/mysql:/var/lib/mysql
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci

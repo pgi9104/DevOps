@@ -1,7 +1,2 @@
 ---
 # vars file for docker-redmine
-redmine:
-  port: 21000
-  volumes: volumes/redmine
-  db:
-    port: 21001

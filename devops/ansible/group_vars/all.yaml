@@ -1,8 +1,114 @@
 global:
   local:
-    dockerComposeDir: /home/{{ ansible_user }}/docker-compose
-    volume: /home/{{ ansible_user }}/volumes
-
+    hostHome: /home/{{ ansible_user }}
+    dockerComposeDir: {{ global.local.hostHome }}/docker-compose
+    volume: {{ global.local.hostHome }}/volumes
+---
+# vars file for docker-gitlab
+gitlab:
+  hostname: localhost
+  ports:
+    http: "22001"
+    ssh: "22002"
+    https: "22003"
+  volumes: {{ global.local.volume }}/gitlab
+  dockerComposeDir: {{ global.local.dockerComposeDir }}/gitlab
+---
 docker:
   compose:
     version: 3.6
+---
+harbor:
+  hostname: local.harbor.com
+  http:
+    port: 29991
+  https:
+    port: 29992
+  harbor_admin_password: Harbor12345
+  data_volume: {{ global.local.volume }}/harbor
+  metric:
+    enabled: "true"
+    port: 29990
+---
+maria:
+  enabled: true
+  container:
+    name: mariadb
+  host: "{{ ansible_user }}"
+  volumes: /home/vagrant/volumes
+  image: mariadb:10.7
+  root:
+    pw: 1234
+  user:
+    id: "{{ ansible_user }}"
+    pw: "{{ ansible_user }}"
+  port: 53307
+
+template:
+  user:
+    id: ansibleUser
+    pw: ansibleUser
+  database:
+    name: AUTH_DB
+  backup:
+    database:
+      name: AUTH_DB
+    filepath: /dump/authdb.sql
+  restore:
+    database:
+      name: AUTH_DB
+    filepath: /dump/authdb.sql
+---
+# vars file for monitoring
+prometheus:
+  ports: 23000
+
+grafana:
+  ports: 23001
+
+devops:
+  host: 192.168.56.10:9100
+
+master:
+  host: 192.168.56.20:9100
+
+worker1:
+  host: 192.168.56.21:9100
+
+worker2:
+  host: 192.168.56.22:9100
+---
+redmine:
+  port: 21000
+  volumes: {{ global.local.volume }}/redmine
+  db:
+    port: 21001
+---
+# vars file for nfs-client
+nfs:
+  server:
+    ip: 192.168.56.20
+    target: /home/vagrant/nfs_shared
+  mount:
+    directory: /home/vagrant/nfs
+---
+# vars file for nfs-server
+nfs:
+  directory: /home/vagrant/nfs_shared
+  line: "192.168.56.0/24"
+  auth: "rw,sync,no_subtree_check,no_root_squash"
+---
+rabbitmq:
+  ports:
+    managementUI: "15672"
+    service: "5672"
+  volumes:
+    # 도커 재기동시 데이터를 유지하기 위함
+    etc: "{{ global.local.volume }}/rabbitmq/etc/"
+    data: "{{ global.local.volume }}/rabbitmq/data/"  # 데이터에 접근하기 위함
+    logs: "{{ global.local.volume }}/rabbitmq/logs/"  # 로그에 접근하기 위함
+  environment:
+    erlangCookie: "RabbitMQ-My-Cookes"  # 클러스터 구성시 노드끼리 동일하게 맞춰줘야 하는 값
+    default:
+      user: "admin"  # management UI에서 로그인 username
+      password: "rabbitpassword" # management UI에서 로그인 password

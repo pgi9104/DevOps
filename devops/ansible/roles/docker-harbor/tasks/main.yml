@@ -70,20 +70,20 @@
 - name: Unarchive harbor.tgz
   unarchive:
     src: https://github.com/goharbor/harbor/releases/download/v2.3.1/harbor-offline-installer-v2.3.1.tgz
-    dest: "/"
+    dest: "{{ global.local.hostHome }}"
     mode: '0755'
     remote_src: yes
 
 - name: Template
   template:
     src: harbor.yml.j2
-    dest: /harbor/harbor.yml
+    dest: {{ global.local.hostHome }}/harbor/harbor.yml
     mode: '0755'
 
 - name: Install harbor
   shell: |
-    export HARBOR_BUNDLE_DIR=/harbor
+    export HARBOR_BUNDLE_DIR={{ global.local.hostHome }}/harbor
     ./install.sh --with-chartmuseum
   args:
-    chdir: "/harbor"
+    chdir: "{{ global.local.hostHome }}/harbor"
     executable: /bin/bash

@@ -5,7 +5,7 @@ services:
     image: prom/prometheus
     container_name: prometheus
     volumes:
-      - /home/{{ ansible_user }}/volumes/prometheus/prometheus.yml:/prometheus/prometheus.yml:ro
+      - {{ global.local.volume }}/prometheus/prometheus.yml:/prometheus/prometheus.yml:ro
     ports:
       - {{ prometheus.ports }}:9090
     command:
@@ -19,7 +19,7 @@ services:
     image: grafana/grafana
     container_name: grafana
     volumes:
-      - /home/{{ ansible_user }}/volumes/grafana/var/lib/grafana:/var/lib/grafana
+      - {{ global.local.volume }}/grafana/var/lib/grafana:/var/lib/grafana
     restart: always
     networks:
       - promnet

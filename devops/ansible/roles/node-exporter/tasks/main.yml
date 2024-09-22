@@ -6,12 +6,12 @@
       state: directory
       mode: '0755'
   with_items:
-    - /home/{{ ansible_user }}/node-exporter/
+    - {{ global.local.hostHome }}/node-exporter/
 
 - name: download node-exporter
   unarchive:
     src: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
-    dest: /home/{{ ansible_user }}/node-exporter/
+    dest: {{ global.local.hostHome }}/node-exporter/
     mode: '0755'
     remote_src: yes
 
@@ -30,7 +30,7 @@
   shell: |
     mv node_exporter-1.7.0.linux-amd64/node_exporter /usr/local/bin/
   args:
-    chdir: "/home/{{ ansible_user }}/node-exporter/"
+    chdir: "{{ global.local.hostHome }}/node-exporter/"
 
 - name: Add User
   user:
@@ -49,4 +49,4 @@
     systemctl start node_exporter
     systemctl enable node_exporter
   args:
-    chdir: /home/{{ ansible_user }}/node-exporter/
+    chdir: {{ global.local.hostHome }}/node-exporter/

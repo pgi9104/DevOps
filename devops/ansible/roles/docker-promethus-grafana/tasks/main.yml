@@ -6,8 +6,8 @@
       state: directory
       mode: '0755'
   with_items:
-    - /home/{{ ansible_user }}/docker-compose/docker-prometheus-grafana
-    - /home/{{ ansible_user }}/volumes/prometheus
+    - {{ global.local.dockerComposeDir }}/docker-prometheus-grafana
+    - {{ global.local.volume }}/prometheus
 
 - name: Template
   template:
@@ -15,10 +15,10 @@
     dest: '{{ item.dest }}'
     mode: '0755'
   with_items:
-    - { src: 'docker-compose.yaml.j2', dest: '/home/{{ ansible_user }}/docker-compose/docker-prometheus-grafana/docker-compose.yaml' }
-    - { src: 'prometheus.yml.j2', dest: '/home/{{ ansible_user }}/volumes/prometheus/prometheus.yml' }
+    - { src: 'docker-compose.yaml.j2', dest: '{{ global.local.dockerComposeDir }}/docker-prometheus-grafana/docker-compose.yaml' }
+    - { src: 'prometheus.yml.j2', dest: '{{ global.local.volume }}/prometheus/prometheus.yml' }
 
 - name: Docker-compose up
   shell:
-    chdir: /home/{{ ansible_user }}/docker-compose/docker-prometheus-grafana
+    chdir: {{ global.local.dockerComposeDir }}/docker-prometheus-grafana
     cmd: docker-compose up -d

@@ -1,9 +1,2 @@
 ---
 # vars file for docker-gitlab
-gitlab:
-  hostname: localhost
-  ports:
-    http: "22001"
-    ssh: "22002"
-    https: "22003"
-  volumes: volumes/gitlab
